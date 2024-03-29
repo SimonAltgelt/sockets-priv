@@ -134,7 +134,7 @@ class Client {
   void Recibir(){
     recv(clientSocket, buffer, sizeof(buffer), 0);
     cout << "El servidor dice " << "'" << buffer << "'" << endl;
-    // resetea el arreglo buffer a 0.
+    // resetea el arreglo buffer a 0. puto el que lee
     memset(buffer, 0, sizeof(buffer));
   }
 
