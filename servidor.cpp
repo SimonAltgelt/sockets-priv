@@ -8,6 +8,7 @@
 #include <iostream>
 
 #define SOCKET_ERROR -1
+#define TIPO_MENSAJE "0210"
 
 using namespace std;
 
@@ -62,10 +63,11 @@ class Server {
   ~Server() { socketClose(handle); }
 
   void Recibir() {
-    socketRead(client, buffer, sizeof(buffer), 0);
-    cout << "El cliente dice: " << buffer << endl;
-    // bool es_valida = validarTarjeta(buffer);
-    // responderCliente(es_valida);
+    char buffer[4024] = {0};
+    int bytes_read = socketRead(client, buffer, sizeof(buffer), 0);
+    if (bytes_read > 0) {
+      cout << "El cliente dice: " << buffer << endl;
+    }
     memset(buffer, 0, sizeof(buffer));
   }
 
@@ -75,41 +77,11 @@ class Server {
     socketClose(client);
     cout << "Cliente desconectado, socket cerrado." << endl;
   }
-
-  //   string SolicitarDatosTarjeta() {
-  //     string numeroTarjeta;
-  //     float monto;
-  //     string codigoSeguridad;
-
-  //     cout << "Ingrese el monto de la compra: ";
-  //     cin >> monto;
-  //     while (true) {
-  //       cout << "Ingrese el numero de tarjeta: ";
-  //       cin >> numeroTarjeta;
-  //       if (numeroTarjeta.length() < 13) {
-  //         cout << "El numero de tarjeta debe tener al menos 13 digitos. Intente de nuevo." << endl;
-  //       } else {
-  //         break;
-  //       }
-  //     }
-  //     cout << "Ingrese el codigo de seguridad: ";
-  //     cin >> codigoSeguridad;
-
-  //     /// Lógica adicional para validar y procesar los datos de la tarjeta...
-
-  //     stringstream ss;
-  //     ss << fixed << setprecision(2) << monto;
-  //     string strMonto = ss.str();
-  //     string mensajeRespuesta =
-  //         "NRO TARJETA:" + numeroTarjeta + ". MONTO: " + strMonto + ". COD. SEGURIDAD:" + codigoSeguridad;
-  //     return mensajeRespuesta;
-  //   }
 };
 
 int main() {
   Server *servidor = new Server();
   while (true) {
-    // string mensajeParaEnviar = servidor->SolicitarDatosTarjeta();
     servidor->Enviar("\x1b[32mTe respondo desde el server \x1b[0m");
     servidor->Recibir();
   }

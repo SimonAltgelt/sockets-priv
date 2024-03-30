@@ -9,16 +9,17 @@
 #include <regex>
 
 #define SOCKET_ERROR -1
+#define TIPO_MENSAJE "0200"
 
 using namespace std;
 
-typedef struct datos_tarjeta{
-  int numeroTarjeta;
-  int codigoSeguridad;
-  float monto;
+typedef struct datos_tarjeta {
+  string numeroTarjeta;
+  string codigoSeguridad;
+  string monto;
 } datos_tarjeta_t;
 
-typedef struct range{
+typedef struct range {
   char rangeLow[8 + 1];
   char rangeHigh[8 + 1];
   unsigned char len;
@@ -26,86 +27,99 @@ typedef struct range{
 } range_t;
 
 bool validarTarjeta(string numeroTarjeta) {
-    // Lógica para validar el número de tarjeta, ver "Reconocimiento Tarjeta"
-    return true;
-}   
-
-bool validarMonto(const string &monto) {
-    // Expresión regular que busca un número con dos decimales
-    regex formato("^\\d+(\\.\\d{1,2})?$");
-    // ^\d+: Empieza con uno o más dígitos.
-    // (\.\d{1,2})?: Puede o no tener un punto seguido de uno o dos dígitos.
-    // $: Termina aquí.
-    // Verifica si el monto coincide con la expresión regular
-    return regex_match(monto, formato);
+  // Lógica para validar el número de tarjeta, ver "Reconocimiento Tarjeta"
+  return true;
 }
 
+bool validarMonto(const string &monto) {
+  regex formato("^\\d+\\.\\d{2}$");
+  return regex_match(monto, formato);
+}
+
+bool validarNumeroTarjeta(const string &nroTarjeta) {
+  regex formato("^[0-9]+$");
+  return regex_match(nroTarjeta, formato);
+}
+
+string padstart(const string &texto, const int longitud, const char caracter) {
+  string result = "";
+  int cant = longitud - texto.length();
+  if (cant < 1) return texto;
+  for (int i = 0; i < cant; i++) {
+    result.push_back(caracter);
+  }
+  result.append(texto);
+  return result;
+}
 
 datos_tarjeta_t *SolicitarDatosTarjeta() {
-    string numeroTarjeta;
-    string monto;
-    string codigoSeguridad;
+  string numeroTarjeta;
+  string monto;
+  string codigoSeguridad;
 
-    bool montoValido = false;
-    while(!montoValido){
+  bool montoValido = false;
+  while (!montoValido) {
     cout << "Ingrese el monto de la compra: ";
-    cin >> monto;  // validar que sea un numero y que tenga 2 decimales, un while igual que el de abajo // comprobar q funque
-    if(!validarMonto(monto)){
-        montoValido = false;
-    } else{
-        montoValido = true;
+    cin >> monto;
+    if (!validarMonto(monto)) {
+      cout << "Por favor ingrese el numero del monto con exactamente 2 decimales y punto decimal" << endl;
+    } else {
+      montoValido = true;
     }
+  }
 
-    }
-    bool numeroTarjetaValido = false;
-    while (!numeroTarjetaValido) {
+  bool numeroTarjetaValido = false;
+  while (!numeroTarjetaValido) {
     cout << "Ingrese el numero de tarjeta: ";
     cin >> numeroTarjeta;
-    if (numeroTarjeta.length() < 13) {
-        cout << "El numero de tarjeta debe tener al menos 13 digitos. Intente de nuevo." << endl;
+    if (!validarNumeroTarjeta(numeroTarjeta)) {
+      cout << "Por favor ingrese solo numeros." << endl;
+    } else if (numeroTarjeta.length() < 13) {
+      cout << "El numero de tarjeta debe tener al menos 13 digitos. Intente de nuevo." << endl;
     } else {
-        numeroTarjetaValido = true;
+      numeroTarjetaValido = true;
     }
-    }
-    if (!validarTarjeta(numeroTarjeta)) {
+  }
+  if (!validarTarjeta(numeroTarjeta)) {
     cout << "TARJETA NO SOPORTADA" << endl;
     return NULL;
-    };
-    
-    bool codigoSeguridadValido = false;
-    while (!codigoSeguridadValido) {
+  };
+
+  bool codigoSeguridadValido = false;
+  while (!codigoSeguridadValido) {
     cout << "Ingrese codigo de seguridad: ";
-    cin >> codigoSeguridad;;
-    if (codigoSeguridad.length() >= 3) {
-        cout << "El codigo de seguridad tiene que tener 3 digitos. Intente de nuevo." << endl;
-    } else{
-        codigoSeguridadValido = true;
+    cin >> codigoSeguridad;
+    if (codigoSeguridad.length() > 3) {
+      cout << "El codigo de seguridad tiene que tener 3 digitos. Intente de nuevo." << endl;
+    } else {
+      codigoSeguridadValido = true;
     }
-    }
+  }
 
-    datos_tarjeta_t *datos_pointer = new datos_tarjeta_t;
-    datos_pointer->numeroTarjeta = stoi(numeroTarjeta);
-    datos_pointer->codigoSeguridad = stoi(codigoSeguridad);
-    datos_pointer->monto = stof(monto);
+  datos_tarjeta_t *datos_pointer = new datos_tarjeta_t;
+  datos_pointer->numeroTarjeta = numeroTarjeta;
+  datos_pointer->codigoSeguridad = codigoSeguridad;
+  datos_pointer->monto = monto;
 
-    return datos_pointer;
-    
+  return datos_pointer;
 }
 
 string ArmarMensajeRequest(datos_tarjeta_t *datos) {
-    // ver formato mensaje
-    string mensaje =
-        to_string(datos->numeroTarjeta) + "," + to_string(datos->codigoSeguridad) + "," + to_string(datos->monto);
-    return mensaje;
+  datos->monto.erase(datos->monto.length() - 3, 1);
+
+  string mensaje = TIPO_MENSAJE + to_string(datos->numeroTarjeta.length()) + datos->numeroTarjeta +
+                   padstart(datos->monto, 12, '0') + datos->codigoSeguridad;
+
+  return mensaje;
 }
 
 class Client {
  public:
-    int clientSocket;
-    char buffer[1024];
-    sockaddr_in serverAddress;
+  int clientSocket;
+  char buffer[1024];
+  sockaddr_in serverAddress;
 
- Client(){
+  Client() {
     clientSocket = socket(AF_INET, SOCK_STREAM, 0);
     serverAddress.sin_family = AF_INET;
     serverAddress.sin_port = htons(8080);
@@ -113,46 +127,48 @@ class Client {
 
     int result = connect(clientSocket, (struct sockaddr *)&serverAddress, sizeof(serverAddress));
     if (result == SOCKET_ERROR) {
-        cout << "Error al conectar!\n Error " << errno << endl;
-    } else{
-        cout << "Conectado al servidor! (c)" << endl;
+      cout << "Error al conectar!\n Error " << errno << endl;
+    } else {
+      cout << "Conectado al servidor! (c)" << endl;
     }
   }
 
-  void Enviar(){
+  void Enviar() {
     datos_tarjeta_t *datos = SolicitarDatosTarjeta();
     if (datos == NULL) {
       return;
     }
     string mensaje = ArmarMensajeRequest(datos);
-    send(clientSocket, &mensaje, strlen(buffer), 0);
+    char *buffer = new char[mensaje.length()+1];
+    strcpy(buffer, mensaje.c_str());
+    cout<<endl;
+    cout<<buffer<<endl;
+    send(clientSocket, buffer, strlen(buffer), 0);
     cout << "Mensaje enviado! (c)" << endl;
-    memset(buffer, 0, sizeof(buffer));
     delete datos;
   }
 
-  void Recibir(){
+  void Recibir() {
     recv(clientSocket, buffer, sizeof(buffer), 0);
-    cout << "El servidor dice " << "'" << buffer << "'" << endl;
+    cout << "El servidor dice "
+         << "'" << buffer << "'" << endl;
     // resetea el arreglo buffer a 0.
     memset(buffer, 0, sizeof(buffer));
   }
 
-  void CerrarSocket(){
+  void CerrarSocket() {
     close(clientSocket);
     cout << "Cliente desconectado, socket cerrado." << endl;
   }
-
 };
 
 int main() {
-    Client *cliente = new Client();
-    while (true){
-        cliente->Enviar();
-        cliente->Recibir();
-    }
+  Client *cliente = new Client();
 
-    delete cliente;
+  cliente->Enviar();
+  cliente->Recibir();
 
-return 0;
+  delete cliente;
+
+  return 0;
 }
