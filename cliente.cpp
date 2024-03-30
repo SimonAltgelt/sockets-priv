@@ -26,6 +26,29 @@ typedef struct range {
   int id;
 } range_t;
 
+typedef struct card {
+  char label[12 + 1];
+  int id;
+} card_t;
+
+void leerDat() {
+  FILE *fp;
+  vector<range_t> rangeVector = vector<range_t>(10);
+
+  fp = fopen("ranges.dat", "rb");
+  if (fp == NULL) {
+    cout << "Error al abrir el archivo" << endl;
+    return;
+  }
+
+  range_t range;
+  while (fread(&range, sizeof(range_t), 1, fp) == 1) {
+    rangeVector.push_back(range);
+  };
+
+  fclose(fp);
+}
+
 bool validarTarjeta(string numeroTarjeta) {
   // Lógica para validar el número de tarjeta, ver "Reconocimiento Tarjeta"
   return true;
@@ -139,10 +162,8 @@ class Client {
       return;
     }
     string mensaje = ArmarMensajeRequest(datos);
-    char *buffer = new char[mensaje.length()+1];
+    char *buffer = new char[mensaje.length() + 1];
     strcpy(buffer, mensaje.c_str());
-    cout<<endl;
-    cout<<buffer<<endl;
     send(clientSocket, buffer, strlen(buffer), 0);
     cout << "Mensaje enviado! (c)" << endl;
     delete datos;

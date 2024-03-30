@@ -12,6 +12,12 @@
 
 using namespace std;
 
+typedef struct datos_tarjeta {
+  string numeroTarjeta;
+  string codigoSeguridad;
+  string monto;
+} datos_tarjeta_t;
+
 typedef struct range {
   char rangeLow[8 + 1];
   char rangeHigh[8 + 1];
