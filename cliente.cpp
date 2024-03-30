@@ -10,6 +10,7 @@
 
 #define SOCKET_ERROR -1
 #define TIPO_MENSAJE "0200"
+#define LONGITUD_CEROS 12
 
 using namespace std;
 
@@ -31,7 +32,7 @@ typedef struct card {
   int id;
 } card_t;
 
-void leerDat() {
+void leerDatRages() {
   FILE *fp;
   vector<range_t> rangeVector = vector<range_t>(10);
 
@@ -49,9 +50,57 @@ void leerDat() {
   fclose(fp);
 }
 
-bool validarTarjeta(string numeroTarjeta) {
-  // Lógica para validar el número de tarjeta, ver "Reconocimiento Tarjeta"
-  return true;
+void leerDatCards() {
+  FILE *fp;
+  vector<card_t> cardVector = vector<card_t>(10);
+
+  fp = fopen("cards.dat", "rb");
+  if (fp == NULL) {
+    cout << "Error al abrir el archivo" << endl;
+    return;
+  }
+
+  card_t card;
+  while (fread(&card, sizeof(card_t), 1, fp) == 1) {
+    cardVector.push_back(card);
+  };
+
+  fclose(fp);
+}
+
+int contarDatRanges() {
+  FILE *fp;
+  fp = fopen("ranges.dat", "rb");
+  if (fp == NULL) return -1;
+  fseek(fp, 0, 2);
+  int tam = ftell(fp);
+
+  fclose(fp);
+  return tam / sizeof(range_t);
+}
+
+int contarDatCards() {
+  FILE *fp;
+  fp = fopen("cards.dat", "rb");
+  if (fp == NULL) return -1;
+  fseek(fp, 0, 2);
+  int tam = ftell(fp);
+
+  fclose(fp);
+  return tam / sizeof(card_t);
+}
+
+bool validarTarjetas(string numeroTarjeta) {
+  // dado numero de tarjeta= se leen los registros del archivo ranges.dat (ver formato)
+  //  para cada registro se debera verificar que los primeros 8 digitos del nro de la tjt
+  // esten incluido dentro del rango y que la longitud coincida con len
+  // rangeLow -> rango inferior // rangeHigh-> rango superior
+  //  los 1eros 8 digitos deben estar comprendidos entre ambos o iguales a alguno de los extremos
+
+  // si las condiciones se cumplen se debera utilizar el id para identificar el
+  //  tipo de tarjeta en el archivo cards.dat
+  // se debera mostrar el label que contiene el nombre de la tarjeta (string) y mostrar en pantalla
+
 }
 
 bool validarMonto(const string &monto) {
@@ -103,7 +152,7 @@ datos_tarjeta_t *SolicitarDatosTarjeta() {
       numeroTarjetaValido = true;
     }
   }
-  if (!validarTarjeta(numeroTarjeta)) {
+  if (!validarTarjetas(numeroTarjeta)) {
     cout << "TARJETA NO SOPORTADA" << endl;
     return NULL;
   };
@@ -131,7 +180,7 @@ string ArmarMensajeRequest(datos_tarjeta_t *datos) {
   datos->monto.erase(datos->monto.length() - 3, 1);
 
   string mensaje = TIPO_MENSAJE + to_string(datos->numeroTarjeta.length()) + datos->numeroTarjeta +
-                   padstart(datos->monto, 12, '0') + datos->codigoSeguridad;
+                   padstart(datos->monto, LONGITUD_CEROS, '0') + datos->codigoSeguridad;
 
   return mensaje;
 }
