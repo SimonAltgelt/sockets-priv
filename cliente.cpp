@@ -10,6 +10,7 @@
 
 #define SOCKET_ERROR -1
 #define TIPO_MENSAJE "0200"
+#define LONGITUD_CEROS 12
 
 using namespace std;
 
@@ -31,7 +32,7 @@ typedef struct card {
   int id;
 } card_t;
 
-void leerDat() {
+void leerDatRages() {
   FILE *fp;
   vector<range_t> rangeVector = vector<range_t>(10);
 
@@ -49,9 +50,103 @@ void leerDat() {
   fclose(fp);
 }
 
-bool validarTarjeta(string numeroTarjeta) {
-  // Lógica para validar el número de tarjeta, ver "Reconocimiento Tarjeta"
-  return true;
+void leerDatCards() {
+  FILE *fp;
+  vector<card_t> cardVector = vector<card_t>(10);
+
+  fp = fopen("cards.dat", "rb");
+  if (fp == NULL) {
+    cout << "Error al abrir el archivo" << endl;
+    return;
+  }
+
+  card_t card;
+  while (fread(&card, sizeof(card_t), 1, fp) == 1) {
+    cardVector.push_back(card);
+  };
+
+  fclose(fp);
+}
+
+// int contarDatRanges() {
+//   FILE *fp;
+//   fp = fopen("ranges.dat", "rb");
+//   if (fp == NULL) return -1;
+//   fseek(fp, 0, 2);
+//   int tam = ftell(fp);
+
+//   fclose(fp);
+//   return tam / sizeof(range_t);
+// }
+
+// int contarDatCards() {
+//   FILE *fp;
+//   fp = fopen("cards.dat", "rb");
+//   if (fp == NULL) return -1;
+//   fseek(fp, 0, 2);
+//   int tam = ftell(fp);
+
+//   fclose(fp);
+//   return tam / sizeof(card_t);
+// }
+
+bool validarTarjetas(string numeroTarjeta) {
+  // void leerDatRanges()
+  FILE *fp;
+  vector<range_t> rangeVector = vector<range_t>(10);
+
+  fp = fopen("ranges.dat", "rb");
+  if (fp == NULL) {
+    cout << "Error al abrir el archivo" << endl;
+    return false;
+  }
+
+  range_t range;
+  while (fread(&range, sizeof(range_t), 1, fp) == 1) {
+    rangeVector.push_back(range);
+  };
+
+  fclose(fp);
+
+  //void leerDatCards()
+  FILE *pf;
+  vector<card_t> cardVector = vector<card_t>(10);
+
+  pf = fopen("cards.dat", "rb");
+  if (pf == NULL) {
+    cout << "Error al abrir el archivo" << endl;
+    return false;
+  }
+
+  card_t card;
+  while (fread(&card, sizeof(card_t), 1, pf) == 1) {
+    cardVector.push_back(card);
+  };
+
+  fclose(pf);
+
+  int idBuscadorEnCards;
+  for (int i = 0; i < rangeVector.size(); i++) {
+    if (numeroTarjeta.length() == rangeVector[i].len) {
+      string ochoDigitos = numeroTarjeta.substr(0,8);
+      if(rangeVector[i].rangeLow <= ochoDigitos && ochoDigitos <= rangeVector[i].rangeHigh){
+        idBuscadorEnCards = rangeVector[i].id;
+      }
+    }
+    else{
+      cout<<"TARJETA INVALIDA."<<endl;
+      return false;
+    }
+  }
+
+  for(int i = 0; i < cardVector.size(); i ++){
+    if(idBuscadorEnCards==cardVector[i].id){
+      cout<<"Nombre de la tarjeta: "<<cardVector[i].label<<endl;
+    }
+    else{
+      return false;
+    }
+  }
 }
 
 bool validarMonto(const string &monto) {
@@ -73,7 +168,7 @@ string padstart(const string &texto, const int longitud, const char caracter) {
   }
   result.append(texto);
   return result;
-}
+}  // (sin chatGPT)
 
 datos_tarjeta_t *SolicitarDatosTarjeta() {
   string numeroTarjeta;
@@ -85,7 +180,9 @@ datos_tarjeta_t *SolicitarDatosTarjeta() {
     cout << "Ingrese el monto de la compra: ";
     cin >> monto;
     if (!validarMonto(monto)) {
-      cout << "Por favor ingrese el numero del monto con exactamente 2 decimales y punto decimal" << endl;
+      cout << "Por favor ingrese el numero del monto con exactamente 2 "
+              "decimales y punto decimal"
+           << endl;
     } else {
       montoValido = true;
     }
@@ -98,12 +195,14 @@ datos_tarjeta_t *SolicitarDatosTarjeta() {
     if (!validarNumeroTarjeta(numeroTarjeta)) {
       cout << "Por favor ingrese solo numeros." << endl;
     } else if (numeroTarjeta.length() < 13) {
-      cout << "El numero de tarjeta debe tener al menos 13 digitos. Intente de nuevo." << endl;
+      cout << "El numero de tarjeta debe tener al menos 13 digitos. Intente de "
+              "nuevo."
+           << endl;
     } else {
       numeroTarjetaValido = true;
     }
   }
-  if (!validarTarjeta(numeroTarjeta)) {
+  if (!validarTarjetas(numeroTarjeta)) {
     cout << "TARJETA NO SOPORTADA" << endl;
     return NULL;
   };
@@ -113,7 +212,9 @@ datos_tarjeta_t *SolicitarDatosTarjeta() {
     cout << "Ingrese codigo de seguridad: ";
     cin >> codigoSeguridad;
     if (codigoSeguridad.length() > 3) {
-      cout << "El codigo de seguridad tiene que tener 3 digitos. Intente de nuevo." << endl;
+      cout << "El codigo de seguridad tiene que tener 3 digitos. Intente de "
+              "nuevo."
+           << endl;
     } else {
       codigoSeguridadValido = true;
     }
@@ -130,8 +231,10 @@ datos_tarjeta_t *SolicitarDatosTarjeta() {
 string ArmarMensajeRequest(datos_tarjeta_t *datos) {
   datos->monto.erase(datos->monto.length() - 3, 1);
 
-  string mensaje = TIPO_MENSAJE + to_string(datos->numeroTarjeta.length()) + datos->numeroTarjeta +
-                   padstart(datos->monto, 12, '0') + datos->codigoSeguridad;
+  string mensaje = TIPO_MENSAJE + to_string(datos->numeroTarjeta.length()) +
+                   datos->numeroTarjeta +
+                   padstart(datos->monto, LONGITUD_CEROS, '0') +
+                   datos->codigoSeguridad;
 
   return mensaje;
 }
@@ -148,7 +251,8 @@ class Client {
     serverAddress.sin_port = htons(8080);
     serverAddress.sin_addr.s_addr = inet_addr("127.0.0.1");
 
-    int result = connect(clientSocket, (struct sockaddr *)&serverAddress, sizeof(serverAddress));
+    int result = connect(clientSocket, (struct sockaddr *)&serverAddress,
+                         sizeof(serverAddress));
     if (result == SOCKET_ERROR) {
       cout << "Error al conectar!\n Error " << errno << endl;
     } else {
