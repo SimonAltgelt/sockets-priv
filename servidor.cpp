@@ -30,6 +30,12 @@ typedef struct card {
   int id;
 } card_t;
 
+// string armarMensajeResponse(){
+//   // si el codigo de respuesta es '00' indica que la transaccion fue aprobada y debera mostrar "APROBADA" en pantalla.
+//   // si el codigo de respuesta es cualquier otro valor, debera mostrar "RECHAZADA".
+
+// }
+
 class Server {
  private:
   void socketCreate() { handle = socket(AF_INET, SOCK_STREAM, 0); }

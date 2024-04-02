@@ -7,6 +7,7 @@
 #include <cstring>
 #include <iostream>
 #include <regex>
+#include <ctime>
 
 #define SOCKET_ERROR -1
 #define TIPO_MENSAJE "0200"
@@ -144,7 +145,7 @@ string padstart(const string &texto, const int longitud, const char caracter) {
   }
   result.append(texto);
   return result;
-} 
+}
 
 datos_tarjeta_t *SolicitarDatosTarjeta() {
   string numeroTarjeta;
@@ -181,8 +182,8 @@ datos_tarjeta_t *SolicitarDatosTarjeta() {
   if (!validarTarjetas(numeroTarjeta)) {
     cout << "TARJETA NO SOPORTADA" << endl;
     return NULL;
-  };
-
+  }
+  
   bool codigoSeguridadValido = false;
   while (!codigoSeguridadValido) {
     cout << "Ingrese codigo de seguridad: ";
@@ -239,8 +240,10 @@ class Client {
       return;
     }
     string mensaje = ArmarMensajeRequest(datos);
+    // armar que si cuando mandas el mensaje request tarda mas de 5 segundos ABORTAR PROCESO.
     char *buffer = new char[mensaje.length() + 1];
     strcpy(buffer, mensaje.c_str());
+    //
     send(clientSocket, buffer, strlen(buffer), 0);
     cout << "Mensaje enviado! (c)" << endl;
     delete datos;
