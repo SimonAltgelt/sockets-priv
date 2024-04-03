@@ -103,31 +103,57 @@ void validarTarjetas(string numeroTarjeta) {
   // };
 
   // fclose(pf);
-  char a[9] = "10000000";
-  char b[9] = "40000000";
-  char c[9] = "45000000";
-  char d[9] = "60000000";
-  char e[9] = "65000000";
-  char f[9] = "80000000";
-  char h[5] = "13";
-  char i[5] = "13";
-  char j[5] = "13";
+  char a[9] = "10000000";  // rangeLow
+  char b[9] = "40000000";  // rangehigh
+  char c[9] = "45000000";  // rangeLow
+  char d[9] = "60000000";  // rangeHigh
+  char e[9] = "65000000";  // rangeLow
+  char f[9] = "80000000";  // rangeHigh
+  char h[5] = "13";        // len
+  char i[5] = "13";        // len
+  char j[5] = "13";        // len
 
-  range_t range{*a, *b, *h, 1};
-  range_t range2{*c, *d, *i, 2};
-  range_t range3{*e, *f, *j, 3};
+  // range_t range{a, b, *h, 1};
+  range_t range;
+  strcpy(range.rangeLow, a);
+  strcpy(range.rangeHigh, b);
+  range.len = stoi(h);
+  range.id = 1;
+
+  range_t range2;
+  strcpy(range2.rangeLow, c);
+  strcpy(range2.rangeHigh, d);
+  range2.len = stoi(i);
+  range2.id = 2;
+
+  range_t range3;
+  strcpy(range3.rangeLow, e);
+  strcpy(range3.rangeHigh, f);
+  range3.len = stoi(j);
+  range3.id = 3;
+
   range_t ranges[3] = {range, range2, range3};
 
-  card_t card{"SimonAlttttt", 1};
+  card_t card;
+  strcpy(card.label, "SimonAlttttt");
+  card.id = 1;
+
   card_t card2{"JuampiCarooo", 2};
+  strcpy(card2.label, "JuampiCarooo");
+  card2.id = 2;
+
   card_t card3{"SofiFerrrrrr", 3};
+  strcpy(card3.label, "SofiFerrrrrr");
+  card3.id = 3;
+
   card_t cards[3] = {card, card2, card3};
 
   int idBuscadorEnCards = -1;
-  for (int i = 1; i < 4; i++) {
+  string ochoDigitos = numeroTarjeta.substr(0, 8);
+  for (int i = 0; i < 3; i++) {
     if (numeroTarjeta.length() == ranges[i].len) {
-      string ochoDigitos = numeroTarjeta.substr(0, 8);
-      if (ranges[i].rangeLow <= ochoDigitos && ochoDigitos <= ranges[i].rangeHigh) {
+      if (ranges[i].rangeLow <= ochoDigitos &&
+          ochoDigitos <= ranges[i].rangeHigh) {
         idBuscadorEnCards = ranges[i].id;
         break;
       }
@@ -136,13 +162,16 @@ void validarTarjetas(string numeroTarjeta) {
     }
   }
   if (idBuscadorEnCards != -1) {
-    for (int i = 1; i < 4; i++) {
+    bool encontrada = false;
+    for (int i = 0; i < 3; i++) {
       if (idBuscadorEnCards == cards[i].id) {
         cout << "Nombre de la tarjeta: " << cards[i].label << endl;
+        encontrada = true;
         break;
-      } else {
-        cout << "TARJETA NO SOPORTADA." << endl;
       }
+    }
+    if (!encontrada) {
+      cout << "TARJETA NO SOPORTADA." << endl;
     }
   }
 }
@@ -226,8 +255,10 @@ datos_tarjeta_t *SolicitarDatosTarjeta() {
 string ArmarMensajeRequest(datos_tarjeta_t *datos) {
   datos->monto.erase(datos->monto.length() - 3, 1);
 
-  string mensaje = TIPO_MENSAJE + to_string(datos->numeroTarjeta.length()) + datos->numeroTarjeta +
-                   padstart(datos->monto, LONGITUD_CEROS, '0') + datos->codigoSeguridad;
+  string mensaje = TIPO_MENSAJE + to_string(datos->numeroTarjeta.length()) +
+                   datos->numeroTarjeta +
+                   padstart(datos->monto, LONGITUD_CEROS, '0') +
+                   datos->codigoSeguridad;
 
   return mensaje;
 }
@@ -244,7 +275,8 @@ class Client {
     serverAddress.sin_port = htons(8080);
     serverAddress.sin_addr.s_addr = inet_addr("127.0.0.1");
 
-    int result = connect(clientSocket, (struct sockaddr *)&serverAddress, sizeof(serverAddress));
+    int result = connect(clientSocket, (struct sockaddr *)&serverAddress,
+                         sizeof(serverAddress));
     if (result == SOCKET_ERROR) {
       cout << "Error al conectar!\n Error " << errno << endl;
     } else {
@@ -258,7 +290,8 @@ class Client {
       return;
     }
     string mensaje = ArmarMensajeRequest(datos);
-    // armar que si cuando mandas el mensaje request tarda mas de 5 segundos ABORTAR PROCESO.
+    // armar que si cuando mandas el mensaje request tarda mas de 5 segundos
+    // ABORTAR PROCESO.
     char *buffer = new char[mensaje.length() + 1];
     strcpy(buffer, mensaje.c_str());
     //
