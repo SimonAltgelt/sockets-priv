@@ -69,7 +69,7 @@ void leerDatCards() {
   fclose(fp);
 }
 
-string validarTarjetas(string numeroTarjeta) {
+void validarTarjetas(string numeroTarjeta) {
   // // void leerDatRanges()
   // FILE *fp;
   // vector<range_t> rangeVector = vector<range_t>(10);
@@ -109,7 +109,6 @@ string validarTarjetas(string numeroTarjeta) {
   char d[9] = "60000000";
   char e[9] = "65000000";
   char f[9] = "80000000";
-  char g[9] = "10000000";
   char h[5] = "13";
   char i[5] = "13";
   char j[5] = "13";
@@ -124,27 +123,27 @@ string validarTarjetas(string numeroTarjeta) {
   card_t card3{"SofiFerrrrrr", 3};
   card_t cards[3] = {card, card2, card3};
 
-  int idBuscadorEnCards;
-  int iteracion;
-  for (int i = 0; i < 3; i++) {
+  int idBuscadorEnCards = -1;
+  for (int i = 1; i < 4; i++) {
     if (numeroTarjeta.length() == ranges[i].len) {
       string ochoDigitos = numeroTarjeta.substr(0, 8);
       if (ranges[i].rangeLow <= ochoDigitos && ochoDigitos <= ranges[i].rangeHigh) {
         idBuscadorEnCards = ranges[i].id;
+        break;
       }
-    } 
-    else{
-      cout<<"TARJETA NO SOPORTADA."<<endl;
+    } else {
+      cout << "TARJETA NO SOPORTADA." << endl;
     }
   }
-  for (int i = 0; i < 3; i++) {
-    if (idBuscadorEnCards == cards[i].id) {
-      cout << "Nombre de la tarjeta: " << cards[i].label << endl;
-      iteracion = i;      
-      return cards[iteracion].label;
-    }else{
-      cout<<"TARJETA NO SOPORTADA."<<endl;
-    } 
+  if (idBuscadorEnCards != -1) {
+    for (int i = 1; i < 4; i++) {
+      if (idBuscadorEnCards == cards[i].id) {
+        cout << "Nombre de la tarjeta: " << cards[i].label << endl;
+        break;
+      } else {
+        cout << "TARJETA NO SOPORTADA." << endl;
+      }
+    }
   }
 }
 
@@ -201,7 +200,7 @@ datos_tarjeta_t *SolicitarDatosTarjeta() {
       numeroTarjetaValido = true;
     }
   }
-  validarNumeroTarjeta(numeroTarjeta);
+  validarTarjetas(numeroTarjeta);
 
   bool codigoSeguridadValido = false;
   while (!codigoSeguridadValido) {
