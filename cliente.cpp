@@ -5,9 +5,9 @@
 #include <unistd.h>
 
 #include <cstring>
+#include <ctime>
 #include <iostream>
 #include <regex>
-#include <ctime>
 
 #define SOCKET_ERROR -1
 #define TIPO_MENSAJE "0200"
@@ -69,60 +69,82 @@ void leerDatCards() {
   fclose(fp);
 }
 
-bool validarTarjetas(string numeroTarjeta) {
-  // void leerDatRanges()
-  FILE *fp;
-  vector<range_t> rangeVector = vector<range_t>(10);
+string validarTarjetas(string numeroTarjeta) {
+  // // void leerDatRanges()
+  // FILE *fp;
+  // vector<range_t> rangeVector = vector<range_t>(10);
 
-  fp = fopen("ranges.dat", "rb");
-  if (fp == NULL) {
-    cout << "Error al abrir el archivo" << endl;
-    return false;
-  }
+  // fp = fopen("ranges.dat", "rb");
+  // if (fp == NULL) {
+  //   cout << "Error al abrir el archivo" << endl;
+  //   return false;
+  // }
 
-  range_t range;
-  while (fread(&range, sizeof(range_t), 1, fp) == 1) {
-    rangeVector.push_back(range);
-  };
+  // range_t range;
+  // while (fread(&range, sizeof(range_t), 1, fp) == 1) {
+  //   rangeVector.push_back(range);
+  // };
 
-  fclose(fp);
+  // fclose(fp);
 
-  // void leerDatCards()
-  FILE *pf;
-  vector<card_t> cardVector = vector<card_t>(10);
+  // // void leerDatCards()
+  // FILE *pf;
+  // vector<card_t> cardVector = vector<card_t>(10);
 
-  pf = fopen("cards.dat", "rb");
-  if (pf == NULL) {
-    cout << "Error al abrir el archivo" << endl;
-    return false;
-  }
+  // pf = fopen("cards.dat", "rb");
+  // if (pf == NULL) {
+  //   cout << "Error al abrir el archivo" << endl;
+  //   return false;
+  // }
 
-  card_t card;
-  while (fread(&card, sizeof(card_t), 1, pf) == 1) {
-    cardVector.push_back(card);
-  };
+  // card_t card;
+  // while (fread(&card, sizeof(card_t), 1, pf) == 1) {
+  //   cardVector.push_back(card);
+  // };
 
-  fclose(pf);
+  // fclose(pf);
+  char a[9] = "10000000";
+  char b[9] = "40000000";
+  char c[9] = "45000000";
+  char d[9] = "60000000";
+  char e[9] = "65000000";
+  char f[9] = "80000000";
+  char g[9] = "10000000";
+  char h[5] = "13";
+  char i[5] = "13";
+  char j[5] = "13";
+
+  range_t range{*a, *b, *h, 1};
+  range_t range2{*c, *d, *i, 2};
+  range_t range3{*e, *f, *j, 3};
+  range_t ranges[3] = {range, range2, range3};
+
+  card_t card{"SimonAlttttt", 1};
+  card_t card2{"JuampiCarooo", 2};
+  card_t card3{"SofiFerrrrrr", 3};
+  card_t cards[3] = {card, card2, card3};
 
   int idBuscadorEnCards;
-  for (int i = 0; i < rangeVector.size(); i++) {
-    if (numeroTarjeta.length() == rangeVector[i].len) {
+  int iteracion;
+  for (int i = 0; i < 3; i++) {
+    if (numeroTarjeta.length() == ranges[i].len) {
       string ochoDigitos = numeroTarjeta.substr(0, 8);
-      if (rangeVector[i].rangeLow <= ochoDigitos && ochoDigitos <= rangeVector[i].rangeHigh) {
-        idBuscadorEnCards = rangeVector[i].id;
+      if (ranges[i].rangeLow <= ochoDigitos && ochoDigitos <= ranges[i].rangeHigh) {
+        idBuscadorEnCards = ranges[i].id;
       }
-    } else {
-      cout << "TARJETA INVALIDA." << endl;
-      return false;
+    } 
+    else{
+      cout<<"TARJETA NO SOPORTADA."<<endl;
     }
   }
-
-  for (int i = 0; i < cardVector.size(); i++) {
-    if (idBuscadorEnCards == cardVector[i].id) {
-      cout << "Nombre de la tarjeta: " << cardVector[i].label << endl;
-    } else {
-      return false;
-    }
+  for (int i = 0; i < 3; i++) {
+    if (idBuscadorEnCards == cards[i].id) {
+      cout << "Nombre de la tarjeta: " << cards[i].label << endl;
+      iteracion = i;      
+      return cards[iteracion].label;
+    }else{
+      cout<<"TARJETA NO SOPORTADA."<<endl;
+    } 
   }
 }
 
@@ -179,11 +201,8 @@ datos_tarjeta_t *SolicitarDatosTarjeta() {
       numeroTarjetaValido = true;
     }
   }
-  if (!validarTarjetas(numeroTarjeta)) {
-    cout << "TARJETA NO SOPORTADA" << endl;
-    return NULL;
-  }
-  
+  validarNumeroTarjeta(numeroTarjeta);
+
   bool codigoSeguridadValido = false;
   while (!codigoSeguridadValido) {
     cout << "Ingrese codigo de seguridad: ";
