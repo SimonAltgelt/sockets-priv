@@ -150,28 +150,33 @@ void validarTarjetas(string numeroTarjeta) {
 
   int idBuscadorEnCards = -1;
   string ochoDigitos = numeroTarjeta.substr(0, 8);
+  bool entreRanges = false;
   for (int i = 0; i < 3; i++) {
     if (numeroTarjeta.length() == ranges[i].len) {
       if (ranges[i].rangeLow <= ochoDigitos &&
           ochoDigitos <= ranges[i].rangeHigh) {
         idBuscadorEnCards = ranges[i].id;
+        entreRanges = true;
         break;
       }
-    } else {
-      cout << "TARJETA NO SOPORTADA." << endl;
     }
   }
+  if (!entreRanges) {
+    cout << "TARJETA NO SOPORTADA." << endl;
+    // aca deberia terminar el programa ENTERO
+  }
   if (idBuscadorEnCards != -1) {
-    bool encontrada = false;
+    bool labelEncontrado = false;
     for (int i = 0; i < 3; i++) {
       if (idBuscadorEnCards == cards[i].id) {
         cout << "Nombre de la tarjeta: " << cards[i].label << endl;
-        encontrada = true;
+        labelEncontrado = true;
         break;
       }
     }
-    if (!encontrada) {
+    if (!labelEncontrado) {
       cout << "TARJETA NO SOPORTADA." << endl;
+      // aca deberia terminar el programa ENTERO
     }
   }
 }
@@ -235,7 +240,7 @@ datos_tarjeta_t *SolicitarDatosTarjeta() {
   while (!codigoSeguridadValido) {
     cout << "Ingrese codigo de seguridad: ";
     cin >> codigoSeguridad;
-    if (codigoSeguridad.length() > 3) {
+    if (codigoSeguridad.length() != 3) {
       cout << "El codigo de seguridad tiene que tener 3 digitos. Intente de "
               "nuevo."
            << endl;
