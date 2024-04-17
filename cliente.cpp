@@ -138,12 +138,12 @@ bool validarTarjetas(string numeroTarjeta) {
   strcpy(card.label, "SimonAlttttt");
   card.id = 1;
 
-  card_t card2{"JuampiCarooo", 2};
-  strcpy(card2.label, "JuampiCarooo");
+  card_t card2{"Gavooooooooo", 2};
+  strcpy(card2.label, "Gavooooooooo");
   card2.id = 2;
 
-  card_t card3{"SofiFerrrrrr", 3};
-  strcpy(card3.label, "SofiFerrrrrr");
+  card_t card3{"Messiiiiiiii", 3};
+  strcpy(card3.label, "Messiiiiiiii");
   card3.id = 3;
 
   card_t cards[3] = {card, card2, card3};
