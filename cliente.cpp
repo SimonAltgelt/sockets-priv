@@ -163,7 +163,6 @@ bool validarTarjetas(string numeroTarjeta) {
   if (!entreRanges) {
     cout << "TARJETA NO SOPORTADA." << endl;
     return true;
-    // aca deberia terminar el programa ENTERO
   }
   if (idBuscadorEnCards != -1) {
     bool labelEncontrado = false;
@@ -178,7 +177,6 @@ bool validarTarjetas(string numeroTarjeta) {
     if (!labelEncontrado) {
       cout << "TARJETA NO SOPORTADA." << endl;
       return true;
-      // aca deberia terminar el programa ENTERO
     }
   }
   return false;
@@ -238,7 +236,7 @@ datos_tarjeta_t *SolicitarDatosTarjeta() {
     }
   }
 
-   if(!validarTarjetas(numeroTarjeta)){
+  if (!validarTarjetas(numeroTarjeta)) {
     bool codigoSeguridadValido = false;
     while (!codigoSeguridadValido) {
       cout << "Ingrese codigo de seguridad: ";
@@ -252,7 +250,6 @@ datos_tarjeta_t *SolicitarDatosTarjeta() {
       }
     }
   }
-  
 
   datos_tarjeta_t *datos_pointer = new datos_tarjeta_t;
   datos_pointer->numeroTarjeta = numeroTarjeta;

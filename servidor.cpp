@@ -79,10 +79,9 @@ class Server {
     int bytes_read = socketRead(client, buffer, sizeof(buffer), 0);
     if (bytes_read > 0) {
       cout << "El cliente dice: " << buffer << endl;
-    }
+    } 
     memset(buffer, 0, sizeof(buffer));
   }
-
   void Enviar(const char *mensaje) { socketWrite(client, mensaje); }
 
   void CerrarSocket() {
