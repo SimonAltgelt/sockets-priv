@@ -69,7 +69,7 @@ void leerDatCards() {
   fclose(fp);
 }
 
-void validarTarjetas(string numeroTarjeta) {
+bool validarTarjetas(string numeroTarjeta) {
   // // void leerDatRanges()
   // FILE *fp;
   // vector<range_t> rangeVector = vector<range_t>(10);
@@ -153,8 +153,7 @@ void validarTarjetas(string numeroTarjeta) {
   bool entreRanges = false;
   for (int i = 0; i < 3; i++) {
     if (numeroTarjeta.length() == ranges[i].len) {
-      if (ranges[i].rangeLow <= ochoDigitos &&
-          ochoDigitos <= ranges[i].rangeHigh) {
+      if (ranges[i].rangeLow <= ochoDigitos && ochoDigitos <= ranges[i].rangeHigh) {
         idBuscadorEnCards = ranges[i].id;
         entreRanges = true;
         break;
@@ -163,6 +162,7 @@ void validarTarjetas(string numeroTarjeta) {
   }
   if (!entreRanges) {
     cout << "TARJETA NO SOPORTADA." << endl;
+    return true;
     // aca deberia terminar el programa ENTERO
   }
   if (idBuscadorEnCards != -1) {
@@ -171,14 +171,17 @@ void validarTarjetas(string numeroTarjeta) {
       if (idBuscadorEnCards == cards[i].id) {
         cout << "Nombre de la tarjeta: " << cards[i].label << endl;
         labelEncontrado = true;
+        return false;
         break;
       }
     }
     if (!labelEncontrado) {
       cout << "TARJETA NO SOPORTADA." << endl;
+      return true;
       // aca deberia terminar el programa ENTERO
     }
   }
+  return false;
 }
 
 bool validarMonto(const string &monto) {
@@ -234,20 +237,22 @@ datos_tarjeta_t *SolicitarDatosTarjeta() {
       numeroTarjetaValido = true;
     }
   }
-  validarTarjetas(numeroTarjeta);
 
-  bool codigoSeguridadValido = false;
-  while (!codigoSeguridadValido) {
-    cout << "Ingrese codigo de seguridad: ";
-    cin >> codigoSeguridad;
-    if (codigoSeguridad.length() != 3) {
-      cout << "El codigo de seguridad tiene que tener 3 digitos. Intente de "
-              "nuevo."
-           << endl;
-    } else {
-      codigoSeguridadValido = true;
+   if(!validarTarjetas(numeroTarjeta)){
+    bool codigoSeguridadValido = false;
+    while (!codigoSeguridadValido) {
+      cout << "Ingrese codigo de seguridad: ";
+      cin >> codigoSeguridad;
+      if (codigoSeguridad.length() != 3) {
+        cout << "El codigo de seguridad tiene que tener 3 digitos. Intente de "
+                "nuevo."
+             << endl;
+      } else {
+        codigoSeguridadValido = true;
+      }
     }
   }
+  
 
   datos_tarjeta_t *datos_pointer = new datos_tarjeta_t;
   datos_pointer->numeroTarjeta = numeroTarjeta;
@@ -260,10 +265,8 @@ datos_tarjeta_t *SolicitarDatosTarjeta() {
 string ArmarMensajeRequest(datos_tarjeta_t *datos) {
   datos->monto.erase(datos->monto.length() - 3, 1);
 
-  string mensaje = TIPO_MENSAJE + to_string(datos->numeroTarjeta.length()) +
-                   datos->numeroTarjeta +
-                   padstart(datos->monto, LONGITUD_CEROS, '0') +
-                   datos->codigoSeguridad;
+  string mensaje = TIPO_MENSAJE + to_string(datos->numeroTarjeta.length()) + datos->numeroTarjeta +
+                   padstart(datos->monto, LONGITUD_CEROS, '0') + datos->codigoSeguridad;
 
   return mensaje;
 }
@@ -280,8 +283,7 @@ class Client {
     serverAddress.sin_port = htons(8080);
     serverAddress.sin_addr.s_addr = inet_addr("127.0.0.1");
 
-    int result = connect(clientSocket, (struct sockaddr *)&serverAddress,
-                         sizeof(serverAddress));
+    int result = connect(clientSocket, (struct sockaddr *)&serverAddress, sizeof(serverAddress));
     if (result == SOCKET_ERROR) {
       cout << "Error al conectar!\n Error " << errno << endl;
     } else {
