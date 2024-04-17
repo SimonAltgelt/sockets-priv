@@ -37,6 +37,8 @@ void leerDatRages() {
   FILE *fp;
   vector<range_t> rangeVector = vector<range_t>(10);
 
+  int holaFranco;
+
   fp = fopen("ranges.dat", "rb");
   if (fp == NULL) {
     cout << "Error al abrir el archivo" << endl;
