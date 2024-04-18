@@ -33,6 +33,7 @@ typedef struct card {
   int id;
 } card_t;
 
+// para leer los .dat en caso de tenerlos
 void leerDatRages() {
   FILE *fp;
   vector<range_t> rangeVector = vector<range_t>(10);
@@ -51,6 +52,7 @@ void leerDatRages() {
   fclose(fp);
 }
 
+// para leer los .dat en caso de tenerlos
 void leerDatCards() {
   FILE *fp;
   vector<card_t> cardVector = vector<card_t>(10);
@@ -103,6 +105,8 @@ bool validarTarjetas(string numeroTarjeta) {
   // };
 
   // fclose(pf);
+
+  /// ME CREE FORMATO DE LOS STRUCTS PARA VERIFICAR
   char a[9] = "10000000";  // rangeLow
   char b[9] = "40000000";  // rangehigh
   char c[9] = "45000000";  // rangeLow
@@ -147,13 +151,16 @@ bool validarTarjetas(string numeroTarjeta) {
   card3.id = 3;
 
   card_t cards[3] = {card, card2, card3};
+  ///
 
+  // verifica si los primeros 8 numeros de la tarjeta estan entre los rangos
   int idBuscadorEnCards = -1;
   string ochoDigitos = numeroTarjeta.substr(0, 8);
   bool entreRanges = false;
   for (int i = 0; i < 3; i++) {
     if (numeroTarjeta.length() == ranges[i].len) {
-      if (ranges[i].rangeLow <= ochoDigitos && ochoDigitos <= ranges[i].rangeHigh) {
+      if (ranges[i].rangeLow <= ochoDigitos &&
+          ochoDigitos <= ranges[i].rangeHigh) {
         idBuscadorEnCards = ranges[i].id;
         entreRanges = true;
         break;
@@ -164,6 +171,8 @@ bool validarTarjetas(string numeroTarjeta) {
     cout << "TARJETA NO SOPORTADA." << endl;
     return true;
   }
+
+  // busca el label de las tarjetas
   if (idBuscadorEnCards != -1) {
     bool labelEncontrado = false;
     for (int i = 0; i < 3; i++) {
@@ -182,16 +191,20 @@ bool validarTarjetas(string numeroTarjeta) {
   return false;
 }
 
+// valida que en el monto solo se puedan ingresar numeros con dos decimales en
+// el string
 bool validarMonto(const string &monto) {
   regex formato("^\\d+\\.\\d{2}$");
   return regex_match(monto, formato);
 }
 
+// valida que solo se puedan ingresar numeros en el string
 bool validarNumeroTarjeta(const string &nroTarjeta) {
   regex formato("^[0-9]+$");
   return regex_match(nroTarjeta, formato);
 }
 
+// rellena con 0 a la izquierda y le saca la coma (yo use . en vez de ,)
 string padstart(const string &texto, const int longitud, const char caracter) {
   string result = "";
   int cant = longitud - texto.length();
@@ -260,31 +273,38 @@ datos_tarjeta_t *SolicitarDatosTarjeta() {
 }
 
 string ArmarMensajeRequest(datos_tarjeta_t *datos) {
+  // esto hace que siempre se borre el . de decimal
   datos->monto.erase(datos->monto.length() - 3, 1);
 
-  string mensaje = TIPO_MENSAJE + to_string(datos->numeroTarjeta.length()) + datos->numeroTarjeta +
-                   padstart(datos->monto, LONGITUD_CEROS, '0') + datos->codigoSeguridad;
+  string mensaje = TIPO_MENSAJE + to_string(datos->numeroTarjeta.length()) +
+                   datos->numeroTarjeta +
+                   padstart(datos->monto, LONGITUD_CEROS, '0') +
+                   datos->codigoSeguridad;
 
   return mensaje;
 }
 
 class Client {
- public:
+ private:
   int clientSocket;
   char buffer[1024];
   sockaddr_in serverAddress;
 
+ public:
   Client() {
+    // crea un socket TCP
     clientSocket = socket(AF_INET, SOCK_STREAM, 0);
     serverAddress.sin_family = AF_INET;
     serverAddress.sin_port = htons(8080);
-    serverAddress.sin_addr.s_addr = inet_addr("127.0.0.1");
+    serverAddress.sin_addr.s_addr = inet_addr("127.0.0.1"); // direccion del local host
 
-    int result = connect(clientSocket, (struct sockaddr *)&serverAddress, sizeof(serverAddress));
+    // intenta conectarse al servidor
+    int result = connect(clientSocket, (struct sockaddr *)&serverAddress,
+                         sizeof(serverAddress));
     if (result == SOCKET_ERROR) {
       cout << "Error al conectar!\n Error " << errno << endl;
     } else {
-      cout << "Conectado al servidor! (c)" << endl;
+      cout << "Conectado al servidor! " << endl;
     }
   }
 
@@ -294,13 +314,12 @@ class Client {
       return;
     }
     string mensaje = ArmarMensajeRequest(datos);
-    // armar que si cuando mandas el mensaje request tarda mas de 5 segundos
-    // ABORTAR PROCESO.
+
     char *buffer = new char[mensaje.length() + 1];
     strcpy(buffer, mensaje.c_str());
-    //
+    
     send(clientSocket, buffer, strlen(buffer), 0);
-    cout << "Mensaje enviado! (c)" << endl;
+    cout << "Mensaje enviado!" << endl;
     delete datos;
   }
 

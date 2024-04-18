@@ -30,14 +30,9 @@ typedef struct card {
   int id;
 } card_t;
 
-// string armarMensajeResponse(){
-//   // si el codigo de respuesta es '00' indica que la transaccion fue aprobada y debera mostrar "APROBADA" en pantalla.
-//   // si el codigo de respuesta es cualquier otro valor, debera mostrar "RECHAZADA".
-
-// }
-
 class Server {
  private:
+  // metodos
   void socketCreate() { handle = socket(AF_INET, SOCK_STREAM, 0); }
 
   void socketConnect(int handle, const char *ip, int port) {
@@ -49,9 +44,13 @@ class Server {
 
   void socketListen() { listen(handle, 0); }
 
-  int socketRead(int handle, char *data, int size, int maxTimeout) { return recv(handle, data, size, 0); }
+  int socketRead(int handle, char *data, int size, int maxTimeout) {
+    return recv(handle, data, size, 0);
+  }
 
-  int socketWrite(int handle, const char *data) { return send(handle, data, strlen(data), 0); }
+  int socketWrite(int handle, const char *data) {
+    return send(handle, data, strlen(data), 0);
+  }
 
   void socketClose(int handle) { close(handle); }
 
@@ -61,26 +60,29 @@ class Server {
   sockaddr_in clientAddress;
   char buffer[4024] = {0};
   string strBuffer;
+  socklen_t clientAddrSize = sizeof(clientAddress);
 
   Server() {
+    // crea y conecta el socket a una ip y puerto
     socketCreate();
     socketConnect(handle, "127.0.0.1", 8080);
     socketListen();
     cout << "Esperando a conexiones..." << endl;
-    socklen_t clientAddrSize = sizeof(clientAddress);
-    if ((client = accept(handle, (struct sockaddr *)&clientAddress, &clientAddrSize)) != SOCKET_ERROR) {
-      cout << "Cliente conectado con exito." << endl;
-    }
   }
 
   ~Server() { socketClose(handle); }
 
   void Recibir() {
-    int bytes_read = socketRead(client, buffer, sizeof(buffer), 0);
+    if ((client = accept(handle, (struct sockaddr *)&clientAddress,
+                         &clientAddrSize)) != SOCKET_ERROR) {
+      cout << "Cliente conectado con exito." << endl;
+    }
+    int bytes_read = socketRead(client, buffer, sizeof(buffer), 5);
     if (bytes_read > 0) {
       cout << "El cliente dice: " << buffer << endl;
-    } 
+    }
     strBuffer = buffer;
+    // resetea el arreglo buffer a 0.
     memset(buffer, 0, sizeof(buffer));
   }
 
@@ -92,35 +94,41 @@ class Server {
   }
 };
 
-string armarMensajeResponse() {
+string armarMensajeResponse(Server *server) {
   string mensaje;
-  Server server;
-  int longitudTarjeta = stoi(server.strBuffer.substr(5, 2));
-  if (server.strBuffer.substr(0, 4) == "0200" && longitudTarjeta >= 13) {
-    if (longitudTarjeta == server.strBuffer.substr(6, longitudTarjeta).length()) {
-      if (server.strBuffer.substr(longitudTarjeta + 6).length() == 12) {
-        if (server.strBuffer.substr(longitudTarjeta + 18, 3).length() == 3) {
-          mensaje = "APROBADA";
+  string codigoRespuestaAprovado = "00";
+  string aprovado = " \n\t\tAPROBADA";
+  string codigoRespuestaDesaprovado = "01";
+  string rechazada = "\n\t\tRECHAZADA";
+  // LongitudTarjeta visualmente quedaria mejor pero por algun motivo tira error
+  // al ejecutarse. int longitudTarjeta = stoi(server->strBuffer.substr(4, 2));
+
+  if (server->strBuffer.substr(0, 4) == "0200" &&
+      stoi(server->strBuffer.substr(4, 2)) >= 13) {
+    if (stoi(server->strBuffer.substr(4, 2)) ==
+        server->strBuffer.substr(6, stoi(server->strBuffer.substr(4, 2)))
+            .length()) {
+      if (server->strBuffer.substr(stoi(server->strBuffer.substr(4, 2)) + 6, 12)
+              .length() == 12) {
+        if (server->strBuffer
+                .substr(stoi(server->strBuffer.substr(4, 2)) + 18, 3)
+                .length() == 3) {
+          mensaje = TIPO_MENSAJE + codigoRespuestaAprovado + aprovado;
         }
       }
     }
   } else {
-    mensaje = "RECHAZADA";
+    mensaje = TIPO_MENSAJE + codigoRespuestaDesaprovado + rechazada;
   }
   return mensaje;
 }
 
 int main() {
   Server *servidor = new Server();
-  while (true) {
-    servidor->Enviar("\x1b[32mTe respondo desde el server \x1b[0m");
-    // aca por ejemplo quisiera hacer:
-    //servidor ->Enviar(armarMensajeResponse().c_str());
-    // pero por algun motivo me anda mal, NO TIRA ERROR, solo anda mal
-    // dice Esperando conexiones... despues Conexion con el cliente establecida y despues DENUEVO
-    // dice Esperando Conexiones... re choto
+
     servidor->Recibir();
-  }
+    servidor->Enviar(armarMensajeResponse(servidor).c_str());
+  
   delete servidor;
   return 0;
 }
