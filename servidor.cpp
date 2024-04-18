@@ -125,10 +125,10 @@ string armarMensajeResponse(Server *server) {
 
 int main() {
   Server *servidor = new Server();
-
+  while (true) {
     servidor->Recibir();
     servidor->Enviar(armarMensajeResponse(servidor).c_str());
-  
+  }
   delete servidor;
   return 0;
 }
