@@ -114,6 +114,11 @@ int main() {
   Server *servidor = new Server();
   while (true) {
     servidor->Enviar("\x1b[32mTe respondo desde el server \x1b[0m");
+    // aca por ejemplo quisiera hacer:
+    //servidor ->Enviar(armarMensajeResponse().c_str());
+    // pero por algun motivo me anda mal, NO TIRA ERROR, solo anda mal
+    // dice Esperando conexiones... despues Conexion con el cliente establecida y despues DENUEVO
+    // dice Esperando Conexiones... re choto
     servidor->Recibir();
   }
   delete servidor;
