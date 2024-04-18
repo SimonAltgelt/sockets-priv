@@ -59,7 +59,8 @@ class Server {
   int handle;
   int client;
   sockaddr_in clientAddress;
-  char buffer[1024];
+  char buffer[4024] = {0};
+  string strBuffer;
 
   Server() {
     socketCreate();
@@ -75,13 +76,14 @@ class Server {
   ~Server() { socketClose(handle); }
 
   void Recibir() {
-    char buffer[4024] = {0};
     int bytes_read = socketRead(client, buffer, sizeof(buffer), 0);
     if (bytes_read > 0) {
       cout << "El cliente dice: " << buffer << endl;
     } 
+    strBuffer = buffer;
     memset(buffer, 0, sizeof(buffer));
   }
+
   void Enviar(const char *mensaje) { socketWrite(client, mensaje); }
 
   void CerrarSocket() {
@@ -89,6 +91,24 @@ class Server {
     cout << "Cliente desconectado, socket cerrado." << endl;
   }
 };
+
+string armarMensajeResponse() {
+  string mensaje;
+  Server server;
+  int longitudTarjeta = stoi(server.strBuffer.substr(5, 2));
+  if (server.strBuffer.substr(0, 4) == "0200" && longitudTarjeta >= 13) {
+    if (longitudTarjeta == server.strBuffer.substr(6, longitudTarjeta).length()) {
+      if (server.strBuffer.substr(longitudTarjeta + 6).length() == 12) {
+        if (server.strBuffer.substr(longitudTarjeta + 18, 3).length() == 3) {
+          mensaje = "APROBADA";
+        }
+      }
+    }
+  } else {
+    mensaje = "RECHAZADA";
+  }
+  return mensaje;
+}
 
 int main() {
   Server *servidor = new Server();
