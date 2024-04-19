@@ -73,38 +73,8 @@ void leerDatCards() {
 
 bool validarTarjetas(string numeroTarjeta) {
   // // void leerDatRanges()
-  // FILE *fp;
-  // vector<range_t> rangeVector = vector<range_t>(10);
-
-  // fp = fopen("ranges.dat", "rb");
-  // if (fp == NULL) {
-  //   cout << "Error al abrir el archivo" << endl;
-  //   return false;
-  // }
-
-  // range_t range;
-  // while (fread(&range, sizeof(range_t), 1, fp) == 1) {
-  //   rangeVector.push_back(range);
-  // };
-
-  // fclose(fp);
-
+  
   // // void leerDatCards()
-  // FILE *pf;
-  // vector<card_t> cardVector = vector<card_t>(10);
-
-  // pf = fopen("cards.dat", "rb");
-  // if (pf == NULL) {
-  //   cout << "Error al abrir el archivo" << endl;
-  //   return false;
-  // }
-
-  // card_t card;
-  // while (fread(&card, sizeof(card_t), 1, pf) == 1) {
-  //   cardVector.push_back(card);
-  // };
-
-  // fclose(pf);
 
   /// ME CREE FORMATO DE LOS STRUCTS PARA VERIFICAR
   char a[9] = "10000000";  // rangeLow
