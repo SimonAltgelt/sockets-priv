@@ -109,15 +109,15 @@ bool validarTarjetas(string numeroTarjeta) {
   range_t ranges[3] = {range, range2, range3};
 
   card_t card;
-  strcpy(card.label, "SimonAlttttt");
+  strcpy(card.label, "PrimerTarjet");
   card.id = 1;
 
-  card_t card2{"Gavooooooooo", 2};
-  strcpy(card2.label, "Gavooooooooo");
+  card_t card2{"SegundaTarje", 2};
+  strcpy(card2.label, "SegundaTarje");
   card2.id = 2;
 
-  card_t card3{"Messiiiiiiii", 3};
-  strcpy(card3.label, "Messiiiiiiii");
+  card_t card3{"TercerTarjet", 3};
+  strcpy(card3.label, "TercerTarjet");
   card3.id = 3;
 
   card_t cards[3] = {card, card2, card3};
